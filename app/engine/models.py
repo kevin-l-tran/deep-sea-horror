@@ -95,7 +95,6 @@ class ConditionChanges:
     set_contamination_active: Optional[bool] = None
     clear_leak_after_turn: bool = False
     clear_power_bleed_after_turn: bool = False
-    keep_pursuit_active: bool = False
 
 
 @dataclass(slots=True)

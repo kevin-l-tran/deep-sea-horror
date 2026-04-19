@@ -163,7 +163,7 @@ DECK: list[TurnCard] = [
         acute_penalty=AcutePenalty(resource="threat", amount=6),
         scan_result="External contact confirmed. Channel state remains unreliable.",
         condition_changes=ConditionChanges(
-            start_pursuit_stage=1, keep_pursuit_active=True),
+            start_pursuit_stage=1),
         partial_outcomes={
             Action.SCAN: PartialOutcome(
                 clear_contamination=True,
@@ -187,7 +187,6 @@ DECK: list[TurnCard] = [
         strong_action=Action.SILENT,
         acute_penalty=AcutePenalty(resource="threat", amount=6),
         scan_result="Structural strain reduced locally. Rhythm source unchanged.",
-        condition_changes=ConditionChanges(keep_pursuit_active=True),
         partial_outcomes={
             Action.REPAIR: PartialOutcome(
                 resource_deltas={"hull": 4},
@@ -211,7 +210,7 @@ DECK: list[TurnCard] = [
         acute_penalty=AcutePenalty(resource="threat", amount=8),
         scan_result="Airflow variance corrected. Second pattern persists across all lines.",
         condition_changes=ConditionChanges(
-            start_pursuit_stage=2, keep_pursuit_active=True),
+            start_pursuit_stage=2),
         partial_outcomes={
             Action.REROUTE: PartialOutcome(
                 resource_deltas={"oxygen": 4},
@@ -236,7 +235,6 @@ DECK: list[TurnCard] = [
         strong_action=Action.SILENT,
         acute_penalty=AcutePenalty(resource="threat", amount=8),
         scan_result="Contact remains outside. Pattern matching has become non-local.",
-        condition_changes=ConditionChanges(keep_pursuit_active=True),
         partial_outcomes={
             Action.REPAIR: PartialOutcome(
                 resource_deltas={"hull": 4},
