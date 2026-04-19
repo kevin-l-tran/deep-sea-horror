@@ -27,6 +27,8 @@ class GameController:
             self.state.narration.current_scene_text = ""
             return self.state
 
+        self._begin_turn_presentation()
+
         self.state.narration.current_scene_text = self.narration.narrate_scene(
             self.state,
             turn_card,
@@ -78,7 +80,8 @@ class GameController:
             return self.state
 
         if looks_like_query(stripped):
-            response = self.narration.answer_query(self.state, turn_card, stripped)
+            response = self.narration.answer_query(
+                self.state, turn_card, stripped)
             self.state.log.append(response)
             return self.state
 
@@ -88,3 +91,10 @@ class GameController:
         )
         self.state.narration.last_input_kind = InputKind.COMMITMENT
         return self.state
+
+    def _begin_turn_presentation(self) -> None:
+        self.state.narration.current_scene_text = ""
+        self.state.narration.fallback_used = False
+        self.state.narration.last_input_kind = None
+        self.state.narration.interpreted_action = None
+        self.state.narration.interpretation_confidence = 0.0

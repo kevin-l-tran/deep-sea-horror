@@ -37,7 +37,7 @@ def prepare_current_turn(state: GameState) -> TurnCard:
     _apply_passive_pressure(state)
     apply_active_condition_drains(state)
     _apply_turn_nine_contamination_spike(state, turn_card)
-    state.sync_for_turn(turn_card)
+    state.apply_prepared_turn(turn_card)
     state.clamp_resources()
     state.check_loss()
     return turn_card

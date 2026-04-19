@@ -41,19 +41,13 @@ class GameState:
     game_over: bool = False
     win: bool = False
 
-    def sync_for_turn(self, turn_card: TurnCard) -> None:
+    def apply_prepared_turn(self, turn_card: TurnCard) -> None:
         self.current_turn_card = turn_card
         self.current_readouts = list(turn_card.readouts)
         self.ai_state = turn_card.ai_state
         self.rescue_eta = max(0, TOTAL_TURNS - turn_card.turn)
 
         self.query = QueryState()
-
-        self.narration.current_scene_text = ""
-        self.narration.fallback_used = False
-        self.narration.last_input_kind = None
-        self.narration.interpreted_action = None
-        self.narration.interpretation_confidence = 0.0
 
     def clamp_resources(self) -> None:
         self.resources.clamp()
