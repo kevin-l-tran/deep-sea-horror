@@ -12,6 +12,12 @@ class Action(Enum):
     REROUTE = auto()
 
 
+class InputKind(Enum):
+    QUERY = auto()
+    COMMITMENT = auto()
+    UNKNOWN = auto()
+
+
 class AIState(Enum):
     """Authored AI reliability phase for the current turn."""
 
@@ -51,6 +57,10 @@ def _partial_outcomes_factory() -> dict[Action, "PartialOutcome"]:
 
 def _aftermath_map_factory() -> dict[Action, list[str]]:
     return {}
+
+
+def _string_list_factory() -> list[str]:
+    return []
 
 
 @dataclass(slots=True)
@@ -129,6 +139,17 @@ class TurnCard:
         default_factory=_aftermath_map_factory)
     purpose_note: str = ""
 
+    # narration-facing authored fields
+    required_scene_facts: list[str] = field(
+        default_factory=_string_list_factory)
+    misleading_facts: list[str] = field(default_factory=_string_list_factory)
+    query_answer_facts: list[str] = field(default_factory=_string_list_factory)
+    forbidden_claims: list[str] = field(default_factory=_string_list_factory)
+    fallback_scene_lines: list[str] = field(
+        default_factory=_string_list_factory)
+    fallback_aftermath_lines: dict[Action, list[str]] = field(
+        default_factory=_aftermath_map_factory)
+
 
 @dataclass(slots=True)
 class ResolutionResult:
@@ -146,3 +167,20 @@ class ActionSpec:
     full_effect_amount: int
     partial_effect_amount: int
     strongest_against: ConditionType
+
+
+@dataclass(slots=True)
+class QueryState:
+    used_this_turn: bool = False
+    last_query: Optional[str] = None
+    last_query_response: Optional[str] = None
+
+
+@dataclass(slots=True)
+class NarrationState:
+    current_scene_text: str = ""
+    last_aftermath_text: str = ""
+    fallback_used: bool = False
+    last_input_kind: Optional[InputKind] = None
+    interpreted_action: Optional[Action] = None
+    interpretation_confidence: float = 0.0

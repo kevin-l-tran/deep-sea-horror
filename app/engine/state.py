@@ -1,7 +1,7 @@
 from dataclasses import dataclass, field
 from typing import Optional
 
-from app.engine.models import AIState, ActiveConditions, Resources, TurnCard
+from app.engine.models import AIState, ActiveConditions, NarrationState, QueryState, Resources, TurnCard
 
 
 STARTING_OXYGEN = 42
@@ -17,8 +17,6 @@ def _aftermath_lines_factory() -> list[str]:
 
 @dataclass(slots=True)
 class GameState:
-    """Mutable run state for the fixed 12-turn scenario."""
-
     turn_index: int = 0
     rescue_eta: int = TOTAL_TURNS
     resources: Resources = field(
@@ -34,6 +32,10 @@ class GameState:
     current_turn_card: Optional[TurnCard] = None
     current_readouts: list[str] = field(
         default_factory=_aftermath_lines_factory)
+
+    query: QueryState = field(default_factory=QueryState)
+    narration: NarrationState = field(default_factory=NarrationState)
+
     last_scan_result_type: Optional[str] = None
     log: list[str] = field(default_factory=_aftermath_lines_factory)
     game_over: bool = False
@@ -44,6 +46,16 @@ class GameState:
         self.current_readouts = list(turn_card.readouts)
         self.ai_state = turn_card.ai_state
         self.rescue_eta = max(0, TOTAL_TURNS - turn_card.turn)
+
+        # reset per-turn query state
+        self.query = QueryState()
+
+        # reset per-turn narration interpretation state
+        self.narration.current_scene_text = ""
+        self.narration.fallback_used = False
+        self.narration.last_input_kind = None
+        self.narration.interpreted_action = None
+        self.narration.interpretation_confidence = 0.0
 
     def clamp_resources(self) -> None:
         self.resources.clamp()
