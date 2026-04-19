@@ -9,6 +9,11 @@ from app.engine.controller import GameController
 from app.engine.formatting import format_ai_state, format_threat
 from app.engine.models import Action
 from app.engine.state import TOTAL_TURNS
+from app.narration.live_responder import GeminiNarrationResponder
+from app.narration.responder import FallbackNarrationResponder
+
+import logging
+logger = logging.getLogger(__name__)
 
 
 class CommandInput(Input):
@@ -39,7 +44,15 @@ class GameScreen(Screen):
 
     def __init__(self) -> None:
         super().__init__()
-        self.controller = GameController()
+        try:
+            narration = GeminiNarrationResponder()
+        except Exception:
+            logger.exception(
+                "Failed to initialize Gemini narration responder; using fallback responder."
+            )
+            narration = FallbackNarrationResponder()
+
+        self.controller = GameController(narration=narration)
         self.status_message = ""
         self.state = self.controller.get_state()
 
