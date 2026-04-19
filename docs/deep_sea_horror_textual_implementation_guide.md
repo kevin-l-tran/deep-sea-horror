@@ -538,15 +538,15 @@ A strong single-screen layout would look like this:
 | HULL     39             | Sonar return repeats...         |
 | THREAT   34 (NEARBY)    |                                 |
 +-------------------------+---------------------------------+
-| AI                                                      |
-| Load is slipping between circuits...                    |
-+---------------------------------------------------------+
-| ACTIONS: [1] SCAN  [2] REPAIR  [3] SILENT  [4] REROUTE |
-+---------------------------------------------------------+
-| LOG / AFTERMATH                                         |
-| Battery -8. Recycler output stabilizing.                |
-| Echo still present.                                     |
-+---------------------------------------------------------+
+| AI                                                        |
+| Load is slipping between circuits...                      |
++-----------------------------------------------------------+
+| ACTIONS: [1] SCAN  [2] REPAIR  [3] SILENT  [4] REROUTE    |
++-----------------------------------------------------------+
+| LOG / AFTERMATH                                           |
+| Battery -8. Recycler output stabilizing.                  |
+| Echo still present.                                       |
++-----------------------------------------------------------+
 ```
 
 ### Layout priorities
