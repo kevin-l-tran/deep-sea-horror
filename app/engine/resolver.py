@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 from app.content.actions import (
     apply_action_cost,
     can_afford_action,
@@ -52,7 +50,8 @@ def resolve_action(state: GameState, turn_card: TurnCard, action: Action) -> Res
     result = ResolutionResult(outcome=OutcomeTier.WRONG)
     cost_paid = apply_action_cost(state.resources, action)
     if cost_paid:
-        result.log_lines.append(format_resource_delta_line("battery", -cost_paid))
+        result.log_lines.append(
+            format_resource_delta_line("battery", -cost_paid))
 
     if action == turn_card.strong_action:
         result.outcome = OutcomeTier.STRONG
@@ -76,14 +75,16 @@ def _apply_strong_resolution(
     spec = get_action_spec(action)
 
     if spec.full_effect_resource is not None and spec.full_effect_amount:
-        _apply_resource_delta(state, spec.full_effect_resource, spec.full_effect_amount)
+        _apply_resource_delta(
+            state, spec.full_effect_resource, spec.full_effect_amount)
 
     if action is Action.REPAIR and state.conditions.leak_stage > 0:
         state.conditions.leak_stage = 0
     elif action is Action.REROUTE and state.conditions.power_bleed_stage > 0:
         state.conditions.power_bleed_stage = 0
     elif action is Action.SILENT and state.conditions.pursuit_stage > 0:
-        refunded_drain = _pursuit_drain_for_stage(state.conditions.pursuit_stage)
+        refunded_drain = _pursuit_drain_for_stage(
+            state.conditions.pursuit_stage)
         _apply_resource_delta(state, "threat", -refunded_drain)
         result.suppress_pursuit_drain = True
     elif action is Action.SCAN and state.conditions.contamination_active:
@@ -119,7 +120,8 @@ def _apply_partial_resolution(
         result.clear_contamination = True
 
     if authored.suppress_pursuit_drain and state.conditions.pursuit_stage > 0:
-        refunded_drain = _pursuit_drain_for_stage(state.conditions.pursuit_stage)
+        refunded_drain = _pursuit_drain_for_stage(
+            state.conditions.pursuit_stage)
         _apply_resource_delta(state, "threat", -refunded_drain)
         result.suppress_pursuit_drain = True
 
@@ -140,7 +142,8 @@ def _apply_wrong_resolution(
         state.last_scan_result_type = "corrupted"
         result.log_lines.append(turn_card.scan_result)
 
-    aftermath = turn_card.wrong_aftermath.get(action, GENERIC_WRONG_AFTERMATH[action])
+    aftermath = turn_card.wrong_aftermath.get(
+        action, GENERIC_WRONG_AFTERMATH[action])
     result.log_lines.extend(aftermath)
 
 

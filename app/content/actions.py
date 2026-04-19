@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 from app.engine.models import Action, ActionSpec, ConditionType, Resources
 
 

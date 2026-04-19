@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 from app.content.deck import get_turn
 from app.content.actions import format_resource_delta_line
 from app.engine.models import Action, OutcomeTier, ResolutionResult, TurnCard
@@ -59,7 +57,8 @@ def resolve_current_turn(state: GameState, action: Action) -> ResolutionResult:
 
 def finalize_turn(state: GameState, turn_card: TurnCard, result: ResolutionResult) -> None:
     if turn_card.acute_penalty and not result.acute_penalty_canceled:
-        _apply_resource_delta(state, turn_card.acute_penalty.resource, turn_card.acute_penalty.amount)
+        _apply_resource_delta(
+            state, turn_card.acute_penalty.resource, turn_card.acute_penalty.amount)
         state.log.append(
             format_resource_delta_line(
                 turn_card.acute_penalty.resource,

@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 from app.engine.models import (
     AIState,
     Action,
@@ -46,7 +44,8 @@ DECK: list[TurnCard] = [
             )
         },
         strong_aftermath={
-            Action.SCAN: ["Channel source remains external to verified crew logs."]
+            Action.SCAN: [
+                "Channel source remains external to verified crew logs."]
         },
         purpose_note="Teach SCAN as diagnosis rather than as a truth button.",
     ),
@@ -80,11 +79,13 @@ DECK: list[TurnCard] = [
         condition_changes=ConditionChanges(start_leak_stage=1),
         partial_outcomes={
             Action.SCAN: PartialOutcome(
-                aftermath_lines=["Pressure differential isolated near the forward seam."]
+                aftermath_lines=[
+                    "Pressure differential isolated near the forward seam."]
             )
         },
         strong_aftermath={
-            Action.REPAIR: ["The seam steadies, though the hull keeps talking."]
+            Action.REPAIR: [
+                "The seam steadies, though the hull keeps talking."]
         },
         purpose_note="Introduce persistent structural damage and mixed symptoms.",
     ),
@@ -128,7 +129,8 @@ DECK: list[TurnCard] = [
         condition_changes=ConditionChanges(start_power_bleed_stage=1),
         partial_outcomes={
             Action.SCAN: PartialOutcome(
-                aftermath_lines=["The load problem sharpens. The echo remains unresolved."]
+                aftermath_lines=[
+                    "The load problem sharpens. The echo remains unresolved."]
             )
         },
         strong_aftermath={
@@ -151,7 +153,8 @@ DECK: list[TurnCard] = [
         partial_outcomes={
             Action.SILENT: PartialOutcome(
                 resource_deltas={"threat": -4},
-                aftermath_lines=["The knocking softens. The recycler still slips."]
+                aftermath_lines=[
+                    "The knocking softens. The recycler still slips."]
             )
         },
         strong_aftermath={
@@ -170,11 +173,13 @@ DECK: list[TurnCard] = [
         strong_action=Action.SILENT,
         acute_penalty=AcutePenalty(resource="threat", amount=6),
         scan_result="External contact confirmed. Channel state remains unreliable.",
-        condition_changes=ConditionChanges(start_pursuit_stage=1, keep_pursuit_active=True),
+        condition_changes=ConditionChanges(
+            start_pursuit_stage=1, keep_pursuit_active=True),
         partial_outcomes={
             Action.SCAN: PartialOutcome(
                 clear_contamination=True,
-                aftermath_lines=["The channel narrows. The contact closes anyway."]
+                aftermath_lines=[
+                    "The channel narrows. The contact closes anyway."]
             )
         },
         strong_aftermath={
@@ -216,15 +221,18 @@ DECK: list[TurnCard] = [
         strong_action=Action.SILENT,
         acute_penalty=AcutePenalty(resource="threat", amount=8),
         scan_result="Airflow variance corrected. Second pattern persists across all lines.",
-        condition_changes=ConditionChanges(start_pursuit_stage=2, keep_pursuit_active=True),
+        condition_changes=ConditionChanges(
+            start_pursuit_stage=2, keep_pursuit_active=True),
         partial_outcomes={
             Action.REROUTE: PartialOutcome(
                 resource_deltas={"oxygen": 4},
-                aftermath_lines=["Airflow improves for a moment. The second breathing pattern remains."]
+                aftermath_lines=[
+                    "Airflow improves for a moment. The second breathing pattern remains."]
             )
         },
         strong_aftermath={
-            Action.SILENT: ["The breathing pattern loses the room for a moment."]
+            Action.SILENT: [
+                "The breathing pattern loses the room for a moment."]
         },
         purpose_note="Escalate pressure and misdirect toward REROUTE.",
     ),
@@ -243,11 +251,13 @@ DECK: list[TurnCard] = [
         partial_outcomes={
             Action.REPAIR: PartialOutcome(
                 resource_deltas={"hull": 4},
-                aftermath_lines=["Something steadies inside. The latch pressure does not."]
+                aftermath_lines=[
+                    "Something steadies inside. The latch pressure does not."]
             ),
             Action.REROUTE: PartialOutcome(
                 resource_deltas={"oxygen": 4},
-                aftermath_lines=["Something steadies inside. The latch pressure does not."]
+                aftermath_lines=[
+                    "Something steadies inside. The latch pressure does not."]
             ),
         },
         strong_aftermath={
