@@ -50,6 +50,12 @@ def prepare_current_turn(state: GameState) -> TurnCard:
 
 def resolve_current_turn(state: GameState, action: Action) -> ResolutionResult:
     turn_card = prepare_current_turn(state)
+
+    if state.game_over:
+        raise ValueError(
+            "Cannot resolve an action: the run ended during turn preparation."
+        )
+
     result = resolve_action(state, turn_card, action)
     finalize_turn(state, turn_card, result)
     return result
