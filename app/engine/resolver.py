@@ -74,7 +74,14 @@ def _apply_strong_resolution(
 ) -> None:
     spec = get_action_spec(action)
 
-    if spec.full_effect_resource is not None and spec.full_effect_amount:
+    # Special-case pursuit turns:
+    # strong SILENT suppresses the current pursuit drain,
+    # but does not also get the generic Threat -8.
+    if action is Action.SILENT and state.conditions.pursuit_stage > 0:
+        refunded_drain = _pursuit_drain_for_stage(
+            state.conditions.pursuit_stage)
+        _apply_resource_delta(state, "threat", -refunded_drain)
+    elif spec.full_effect_resource is not None and spec.full_effect_amount:
         _apply_resource_delta(
             state, spec.full_effect_resource, spec.full_effect_amount)
 
@@ -82,11 +89,6 @@ def _apply_strong_resolution(
         state.conditions.leak_stage = 0
     elif action is Action.REROUTE and state.conditions.power_bleed_stage > 0:
         state.conditions.power_bleed_stage = 0
-    elif action is Action.SILENT and state.conditions.pursuit_stage > 0:
-        refunded_drain = _pursuit_drain_for_stage(
-            state.conditions.pursuit_stage)
-        _apply_resource_delta(state, "threat", -refunded_drain)
-        result.suppress_pursuit_drain = True
     elif action is Action.SCAN and state.conditions.contamination_active:
         result.clear_contamination = True
 
@@ -118,12 +120,6 @@ def _apply_partial_resolution(
 
     if authored.clear_contamination and state.conditions.contamination_active:
         result.clear_contamination = True
-
-    if authored.suppress_pursuit_drain and state.conditions.pursuit_stage > 0:
-        refunded_drain = _pursuit_drain_for_stage(
-            state.conditions.pursuit_stage)
-        _apply_resource_delta(state, "threat", -refunded_drain)
-        result.suppress_pursuit_drain = True
 
     if action is Action.SCAN:
         state.last_scan_result_type = "partial"

@@ -105,7 +105,6 @@ class PartialOutcome:
     resource_deltas: dict[str, int] = field(
         default_factory=_resource_deltas_factory)
     clear_contamination: bool = False
-    suppress_pursuit_drain: bool = False
     aftermath_lines: list[str] = field(
         default_factory=_aftermath_lines_factory)
 
@@ -137,7 +136,6 @@ class ResolutionResult:
     outcome: OutcomeTier
     log_lines: list[str] = field(default_factory=_aftermath_lines_factory)
     acute_penalty_canceled: bool = False
-    suppress_pursuit_drain: bool = False
     clear_contamination: bool = False
 
 
