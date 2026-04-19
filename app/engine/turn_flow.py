@@ -1,5 +1,6 @@
 from app.content.deck import get_turn
 from app.content.actions import format_resource_delta_line
+from app.engine.conditions import apply_active_condition_drains, apply_resource_delta
 from app.engine.models import Action, OutcomeTier, ResolutionResult, TurnCard
 from app.engine.resolver import resolve_action
 from app.engine.state import GameState, TOTAL_TURNS
@@ -7,12 +8,6 @@ from app.engine.state import GameState, TOTAL_TURNS
 
 PASSIVE_OXYGEN_DRAIN = -2
 PASSIVE_THREAT_GAIN = 2
-LEAK_STAGE_1_DRAIN = -3
-LEAK_STAGE_2_DRAIN = -5
-POWER_BLEED_STAGE_1_DRAIN = -3
-POWER_BLEED_STAGE_2_DRAIN = -5
-PURSUIT_STAGE_1_DRAIN = 5
-PURSUIT_STAGE_2_DRAIN = 8
 TURN_NINE_CONTAMINATION_SPIKE = 3
 
 
@@ -40,7 +35,7 @@ def prepare_current_turn(state: GameState) -> TurnCard:
     turn_card = get_turn(turn_number)
     _apply_turn_start_condition_changes(state, turn_card)
     _apply_passive_pressure(state)
-    _apply_active_condition_drains(state)
+    apply_active_condition_drains(state)
     _apply_turn_nine_contamination_spike(state, turn_card)
     state.sync_for_turn(turn_card)
     state.clamp_resources()
@@ -63,7 +58,7 @@ def resolve_current_turn(state: GameState, action: Action) -> ResolutionResult:
 
 def finalize_turn(state: GameState, turn_card: TurnCard, result: ResolutionResult) -> None:
     if turn_card.acute_penalty and not result.acute_penalty_canceled:
-        _apply_resource_delta(
+        apply_resource_delta(
             state, turn_card.acute_penalty.resource, turn_card.acute_penalty.amount)
         state.log.append(
             format_resource_delta_line(
@@ -109,23 +104,6 @@ def _apply_passive_pressure(state: GameState) -> None:
     state.resources.threat += PASSIVE_THREAT_GAIN
 
 
-def _apply_active_condition_drains(state: GameState) -> None:
-    if state.conditions.leak_stage == 1:
-        state.resources.hull += LEAK_STAGE_1_DRAIN
-    elif state.conditions.leak_stage >= 2:
-        state.resources.hull += LEAK_STAGE_2_DRAIN
-
-    if state.conditions.power_bleed_stage == 1:
-        state.resources.oxygen += POWER_BLEED_STAGE_1_DRAIN
-    elif state.conditions.power_bleed_stage >= 2:
-        state.resources.oxygen += POWER_BLEED_STAGE_2_DRAIN
-
-    if state.conditions.pursuit_stage == 1:
-        state.resources.threat += PURSUIT_STAGE_1_DRAIN
-    elif state.conditions.pursuit_stage >= 2:
-        state.resources.threat += PURSUIT_STAGE_2_DRAIN
-
-
 def _apply_turn_nine_contamination_spike(state: GameState, turn_card: TurnCard) -> None:
     if turn_card.turn == 9 and state.conditions.contamination_active:
         state.resources.threat += TURN_NINE_CONTAMINATION_SPIKE
@@ -154,19 +132,3 @@ def _apply_end_of_turn_cleanup(
 
     if turn_card.turn >= 9:
         state.conditions.contamination_active = False
-
-
-def _apply_resource_delta(state: GameState, resource: str, amount: int) -> None:
-    if resource == "oxygen":
-        state.resources.oxygen += amount
-        return
-    if resource == "battery":
-        state.resources.battery += amount
-        return
-    if resource == "hull":
-        state.resources.hull += amount
-        return
-    if resource == "threat":
-        state.resources.threat += amount
-        return
-    raise ValueError(f"Unknown resource: {resource}")

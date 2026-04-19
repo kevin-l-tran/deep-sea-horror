@@ -5,10 +5,10 @@ from app.content.actions import (
     get_action_spec,
     get_partial_effect,
 )
+from app.engine.conditions import apply_resource_delta, apply_resource_deltas, pursuit_drain_for_stage
 from app.engine.models import (
     Action,
     OutcomeTier,
-    PartialOutcome,
     ResolutionResult,
     TurnCard,
 )
@@ -78,11 +78,11 @@ def _apply_strong_resolution(
     # strong SILENT suppresses the current pursuit drain,
     # but does not also get the generic Threat -8.
     if action is Action.SILENT and state.conditions.pursuit_stage > 0:
-        refunded_drain = _pursuit_drain_for_stage(
+        refunded_drain = pursuit_drain_for_stage(
             state.conditions.pursuit_stage)
-        _apply_resource_delta(state, "threat", -refunded_drain)
+        apply_resource_delta(state, "threat", -refunded_drain)
     elif spec.full_effect_resource is not None and spec.full_effect_amount:
-        _apply_resource_delta(
+        apply_resource_delta(
             state, spec.full_effect_resource, spec.full_effect_amount)
 
     if action is Action.REPAIR and state.conditions.leak_stage > 0:
@@ -112,11 +112,11 @@ def _apply_partial_resolution(
     authored = turn_card.partial_outcomes[action]
 
     if authored.resource_deltas:
-        _apply_resource_deltas(state, authored)
+        apply_resource_deltas(state, authored.resource_deltas)
     else:
         resource, amount = get_partial_effect(action)
         if resource is not None and amount:
-            _apply_resource_delta(state, resource, amount)
+            apply_resource_delta(state, resource, amount)
 
     if authored.clear_contamination and state.conditions.contamination_active:
         result.clear_contamination = True
@@ -141,32 +141,3 @@ def _apply_wrong_resolution(
     aftermath = turn_card.wrong_aftermath.get(
         action, GENERIC_WRONG_AFTERMATH[action])
     result.log_lines.extend(aftermath)
-
-
-def _apply_resource_deltas(state: GameState, outcome: PartialOutcome) -> None:
-    for resource, amount in outcome.resource_deltas.items():
-        _apply_resource_delta(state, resource, amount)
-
-
-def _apply_resource_delta(state: GameState, resource: str, amount: int) -> None:
-    if resource == "oxygen":
-        state.resources.oxygen += amount
-        return
-    if resource == "battery":
-        state.resources.battery += amount
-        return
-    if resource == "hull":
-        state.resources.hull += amount
-        return
-    if resource == "threat":
-        state.resources.threat += amount
-        return
-    raise ValueError(f"Unknown resource: {resource}")
-
-
-def _pursuit_drain_for_stage(stage: int) -> int:
-    if stage >= 2:
-        return 8
-    if stage == 1:
-        return 5
-    return 0
