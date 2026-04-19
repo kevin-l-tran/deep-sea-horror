@@ -20,14 +20,6 @@ class GameController:
     def choose_action(self, action: Action) -> GameState:
         if self.state.game_over:
             raise ValueError("Cannot choose an action after the game is over.")
-
-        if self.state.current_turn_card is None:
-            prepare_current_turn(self.state)
-
-        if self.state.game_over:
-            raise ValueError(
-                "Cannot choose an action: the run ended during turn preparation."
-            )
-
+        
         resolve_current_turn(self.state, action)
         return self.state
