@@ -6,7 +6,7 @@ from app.engine.models import AIState, ActiveConditions, Resources, TurnCard
 
 STARTING_OXYGEN = 42
 STARTING_BATTERY = 40
-STARTING_HULL = 50
+STARTING_HULL = 46
 STARTING_THREAT = 18
 TOTAL_TURNS = 12
 
