@@ -59,7 +59,8 @@ def resolve_current_turn(state: GameState, action: Action) -> ResolutionResult:
 def finalize_turn(state: GameState, turn_card: TurnCard, result: ResolutionResult) -> None:
     if turn_card.acute_penalty and not result.acute_penalty_canceled:
         apply_resource_delta(
-            state, turn_card.acute_penalty.resource, turn_card.acute_penalty.amount)
+            state, turn_card.acute_penalty.resource, turn_card.acute_penalty.amount
+        )
         state.log.append(
             format_resource_delta_line(
                 turn_card.acute_penalty.resource,
@@ -70,7 +71,6 @@ def finalize_turn(state: GameState, turn_card: TurnCard, result: ResolutionResul
     if result.clear_contamination:
         state.conditions.contamination_active = False
 
-    state.log.extend(result.log_lines)
     _apply_end_of_turn_cleanup(state, turn_card, result)
     state.clamp_resources()
 

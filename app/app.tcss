@@ -1,69 +1,25 @@
 Screen {
-    background: black;
-    color: white;
+    padding: 1 2;
 }
 
 #shell {
+    height: 100%;
+}
+
+#meta {
+    margin-bottom: 1;
+}
+
+#scene {
     height: 1fr;
-    padding: 1;
+    margin-bottom: 1;
 }
 
-#top_row {
-    height: 12;
+#log {
+    margin-bottom: 1;
+    color: $text-muted;
 }
 
-#header_panel {
-    width: 28;
-    border: round white;
-    margin-right: 1;
-    padding: 1;
-}
-
-#resource_panel {
-    width: 28;
-    border: round white;
-    margin-right: 1;
-    padding: 1;
-}
-
-#readout_panel {
-    width: 1fr;
-    border: round white;
-    padding: 1;
-}
-
-#ai_panel {
-    height: 5;
-    border: round white;
-    margin-top: 1;
-    padding: 1;
-}
-
-#action_panel {
-    height: 7;
-    border: round white;
-    margin-top: 1;
-    padding: 1;
-}
-
-#status_panel {
-    height: 4;
-    border: round white;
-    margin-top: 1;
-    padding: 1;
-}
-
-#log_panel {
-    height: 1fr;
-    border: round white;
-    margin-top: 1;
-    padding: 1;
-}
-
-Header {
-    dock: top;
-}
-
-Footer {
+#command {
     dock: bottom;
 }

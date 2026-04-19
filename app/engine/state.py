@@ -47,11 +47,10 @@ class GameState:
         self.ai_state = turn_card.ai_state
         self.rescue_eta = max(0, TOTAL_TURNS - turn_card.turn)
 
-        # reset per-turn query state
         self.query = QueryState()
 
-        # reset per-turn narration interpretation state
         self.narration.current_scene_text = ""
+        self.narration.last_aftermath_text = ""
         self.narration.fallback_used = False
         self.narration.last_input_kind = None
         self.narration.interpreted_action = None

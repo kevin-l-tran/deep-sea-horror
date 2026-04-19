@@ -1,26 +1,39 @@
+from textual import events
 from textual.app import ComposeResult
-from textual.containers import Horizontal, Vertical
+from textual.containers import Vertical
+from textual.message import Message
 from textual.screen import Screen
-from textual.widgets import Footer, Header, Static
+from textual.widgets import Input, Static
 
 from app.engine.controller import GameController
-from app.engine.formatting import (
-    format_action_line,
-    format_ai_state,
-    format_rescue_eta_line,
-    format_threat,
-    format_turn_line,
-)
+from app.engine.formatting import format_ai_state, format_threat
 from app.engine.models import Action
 from app.engine.state import TOTAL_TURNS
 
 
+class CommandInput(Input):
+    class Hotkey(Message):
+        def __init__(self, action: Action) -> None:
+            self.action = action
+            super().__init__()
+
+    KEY_TO_ACTION = {
+        "1": Action.SCAN,
+        "2": Action.REPAIR,
+        "3": Action.SILENT,
+        "4": Action.REROUTE,
+    }
+
+    def on_key(self, event: events.Key) -> None:
+        action = self.KEY_TO_ACTION.get(event.key)
+        if action is not None:
+            event.prevent_default()
+            event.stop()
+            self.post_message(self.Hotkey(action))
+
+
 class GameScreen(Screen):
     BINDINGS = [
-        ("1", "scan", "Scan"),
-        ("2", "repair", "Repair"),
-        ("3", "silent", "Silent"),
-        ("4", "reroute", "Reroute"),
         ("q", "quit_app", "Quit"),
     ]
 
@@ -28,122 +41,137 @@ class GameScreen(Screen):
         super().__init__()
         self.controller = GameController()
         self.status_message = ""
+        self.state = self.controller.get_state()
 
     def compose(self) -> ComposeResult:
-        yield Header(show_clock=False)
-
         with Vertical(id="shell"):
-            with Horizontal(id="top_row"):
-                yield Static(id="header_panel")
-                yield Static(id="resource_panel")
-                yield Static(id="readout_panel")
-
-            yield Static(id="ai_panel")
-            yield Static(id="action_panel")
-            yield Static(id="status_panel")
-            yield Static(id="log_panel")
-
-        yield Footer()
+            yield Static(id="meta")
+            yield Static(id="scene")
+            yield Static(id="log")
+            yield CommandInput(
+                placeholder="Type a question or an action...",
+                id="command",
+            )
 
     def on_mount(self) -> None:
-        self.controller.new_game()
-        self.controller.get_current_turn()
+        self.state = self.controller.new_game()
         self.refresh_from_state()
+        self._focus_command_input()
 
-    def action_scan(self) -> None:
-        self._handle_action(Action.SCAN)
+    def on_command_input_hotkey(self, message: CommandInput.Hotkey) -> None:
+        self._handle_action(message.action)
 
-    def action_repair(self) -> None:
-        self._handle_action(Action.REPAIR)
+    def on_input_submitted(self, event: Input.Submitted) -> None:
+        text = event.value.strip()
+        event.input.value = ""
 
-    def action_silent(self) -> None:
-        self._handle_action(Action.SILENT)
+        if not text:
+            self.status_message = "Input unclear. Rephrase or use 1-4."
+            self.refresh_from_state()
+            self._focus_command_input()
+            return
 
-    def action_reroute(self) -> None:
-        self._handle_action(Action.REROUTE)
+        try:
+            self.state = self.controller.submit_text(text)
+        except ValueError as exc:
+            self.status_message = str(exc)
+            self.refresh_from_state()
+            self._focus_command_input()
+            return
+
+        self.status_message = ""
+        self.refresh_from_state()
+        self._focus_command_input()
 
     def action_quit_app(self) -> None:
         self.app.exit()
 
     def _handle_action(self, action: Action) -> None:
         try:
-            self.controller.choose_action(action)
-            self.status_message = ""
+            self.state = self.controller.submit_action(action)
         except ValueError as exc:
             self.status_message = str(exc)
             self.refresh_from_state()
+            self._focus_command_input()
             return
 
-        state = self.controller.get_state()
-
-        # After a resolved turn, prepare the next one before repainting.
-        if not state.game_over:
-            self.controller.get_current_turn()
-
+        self.status_message = ""
         self.refresh_from_state()
+        self._focus_command_input()
+
+    def _focus_command_input(self) -> None:
+        command = self.query_one(CommandInput)
+        if not self.state.game_over and not command.disabled:
+            command.focus()
 
     def refresh_from_state(self) -> None:
-        state = self.controller.get_state()
-
-        if not state.game_over and state.current_turn_card is None:
-            self.controller.get_current_turn()
-            state = self.controller.get_state()
+        self.state = self.controller.get_state()
+        state = self.state
 
         turn_number = min(state.turn_index + 1, TOTAL_TURNS)
+        ai_text = format_ai_state(state.ai_state)
+        threat_text = format_threat(state.resources.threat)
 
-        header_text = "\n".join(
-            [
-                " DEEP-SEA HORROR // SUBSYSTEM VIEW",
-                format_turn_line(turn_number, TOTAL_TURNS),
-                format_rescue_eta_line(state.rescue_eta),
-            ]
-        )
+        query_text = "QUERY OPEN" if not state.query.used_this_turn else "COMMITMENT REQUIRED"
 
-        resource_text = "\n".join(
-            [
-                " STATUS",
-                f" OXYGEN : {state.resources.oxygen}",
-                f" BATTERY: {state.resources.battery}",
-                f" HULL   : {state.resources.hull}",
-                f" THREAT : {format_threat(state.resources.threat)}",
-            ]
-        )
-
-        readouts = state.current_readouts or ["No active readouts."]
-        readout_text = " READOUTS\n" + "\n".join(f" {line}" for line in readouts)
-
-        ai_line = state.current_turn_card.ai_line if state.current_turn_card else ""
-        ai_text = "\n".join(
-            [
-                f" AI [{format_ai_state(state.ai_state)}]",
-                f" {ai_line}" if ai_line else " ---",
-            ]
-        )
-
-        action_text = "\n".join(
-            [
-                " ACTIONS",
-                f" [1] {format_action_line(Action.SCAN)}",
-                f" [2] {format_action_line(Action.REPAIR)}",
-                f" [3] {format_action_line(Action.SILENT)}",
-                f" [4] {format_action_line(Action.REROUTE)}",
-            ]
-        )
+        fallback_text = "FALLBACK" if state.narration.fallback_used else "PRIMARY"
 
         if state.game_over:
-            status_text = " STATUS\n RESCUE ARRIVED." if state.win else " STATUS\n VESSEL LOST."
+            status_text = "RESCUE ARRIVED." if state.win else "VESSEL LOST."
         elif self.status_message:
-            status_text = f" STATUS\n {self.status_message}"
+            status_text = self.status_message
         else:
-            status_text = " STATUS\n Awaiting command."
+            status_text = "AWAITING INPUT."
 
-        recent_log = state.log[-8:] if state.log else ["No recent output."]
-        log_text = " LOG\n" + "\n".join(f" {line}" for line in recent_log)
+        meta_text = "\n".join(
+            [
+                f"TURN {turn_number:02d}/{TOTAL_TURNS:02d}  ETA {state.rescue_eta:02d}  AI {ai_text}",
+                f"O2 {state.resources.oxygen:02d}  BAT {state.resources.battery:02d}  HULL {state.resources.hull:02d}  THREAT {threat_text}",
+                f"{query_text}  MODE {fallback_text}",
+                "[1] SCAN  [2] REPAIR  [3] SILENT  [4] REROUTE",
+                status_text,
+            ]
+        )
 
-        self.query_one("#header_panel", Static).update(header_text)
-        self.query_one("#resource_panel", Static).update(resource_text)
-        self.query_one("#readout_panel", Static).update(readout_text)
-        self.query_one("#ai_panel", Static).update(ai_text)
-        self.query_one("#action_panel", Static).update(action_text)
-        self.query_one("#status_panel", Static).update(status_text)
-        self.query_one("#log_panel", Static).update(log_text)
+        narrated_scene = state.narration.current_scene_text.strip()
+        if narrated_scene:
+            scene_text = narrated_scene
+        else:
+            readouts = state.current_readouts or ["No active readouts."]
+            ai_line = state.current_turn_card.ai_line if state.current_turn_card else ""
+            parts = ["\n".join(readouts)]
+            if ai_line:
+                parts.append(f"AI: {ai_line}")
+            scene_text = "\n\n".join(parts)
+
+        lines: list[str] = []
+        seen: set[str] = set()
+
+        def add_line(line: str) -> None:
+            cleaned = line.strip()
+            if cleaned and cleaned not in seen:
+                seen.add(cleaned)
+                lines.append(cleaned)
+
+        if state.query.last_query_response:
+            add_line(f"> {state.query.last_query_response}")
+
+        if state.narration.last_aftermath_text:
+            add_line(state.narration.last_aftermath_text)
+
+        for line in state.log[-5:]:
+            add_line(line)
+
+        log_text = "\n".join(lines or ["No recent output."])
+
+        self.query_one("#meta", Static).update(meta_text)
+        self.query_one("#scene", Static).update(scene_text)
+        self.query_one("#log", Static).update(log_text)
+
+        command = self.query_one(CommandInput)
+        command.disabled = state.game_over
+        command.placeholder = (
+            "Run complete. Press q to quit."
+            if state.game_over
+            else "Type a question or an action..."
+        )
