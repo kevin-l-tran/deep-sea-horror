@@ -38,11 +38,6 @@ DECK: list[TurnCard] = [
         ai_line="Signal origin unclear. Channel integrity uncertain.",
         strong_action=Action.SCAN,
         scan_result="Voice print mismatch. Internal source not confirmed.",
-        partial_outcomes={
-            Action.SCAN: PartialOutcome(
-                aftermath_lines=["The source narrows, but certainty does not."]
-            )
-        },
         strong_aftermath={
             Action.SCAN: [
                 "Channel source remains external to verified crew logs."]
@@ -55,12 +50,6 @@ DECK: list[TurnCard] = [
         ai_state=AIState.STABLE,
         ai_line="Life-support instability spreading across recycler load.",
         strong_action=Action.REROUTE,
-        partial_outcomes={
-            Action.REROUTE: PartialOutcome(
-                resource_deltas={"oxygen": 4},
-                aftermath_lines=["Recycler output stabilizing."]
-            )
-        },
         strong_aftermath={
             Action.REROUTE: ["Recycler output stabilizing."]
         },
