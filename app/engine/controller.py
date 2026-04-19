@@ -47,7 +47,8 @@ class GameController:
         self.state.narration.interpreted_action = action
         self.state.narration.interpretation_confidence = 1.0
 
-        # Narrate using the just-resolved turn_card/result, before starting the next turn.
+        self.state.log.extend(result.log_lines)
+
         self.state.narration.last_aftermath_text = self.narration.narrate_aftermath(
             turn_card,
             action,

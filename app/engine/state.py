@@ -50,7 +50,6 @@ class GameState:
         self.query = QueryState()
 
         self.narration.current_scene_text = ""
-        self.narration.last_aftermath_text = ""
         self.narration.fallback_used = False
         self.narration.last_input_kind = None
         self.narration.interpreted_action = None
