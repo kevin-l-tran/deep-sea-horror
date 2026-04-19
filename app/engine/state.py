@@ -43,7 +43,7 @@ class GameState:
         self.current_turn_card = turn_card
         self.current_readouts = list(turn_card.readouts)
         self.ai_state = turn_card.ai_state
-        self.rescue_eta = max(0, TOTAL_TURNS - turn_card.turn + 1)
+        self.rescue_eta = max(0, TOTAL_TURNS - turn_card.turn)
 
     def clamp_resources(self) -> None:
         self.resources.clamp()
